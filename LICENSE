@@ -1,21 +1,30 @@
-MIT License
+Battery Health Checker License (GPLv3 + Non-Commercial Clause)
 
-Copyright (c) 2025 LotfiBoukhemerra
+Copyright © 2024 Lotfi Boukhemerra
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This program is distributed under the GPLv3 license with the following modifications:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. Basic Rights (Based on GPLv3)
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+You are free to use, modify, and redistribute this software.
+
+Any derived version must remain open-source and must publish its source code.
+
+2. Prohibition of Commercial Use
+
+Selling this software or making direct profit from it is strictly prohibited.
+
+Redistribution as part of commercial closed-source products or paid services is not allowed.
+
+3. Mandatory Source Code Sharing
+
+Any modifications or improvements must be made available to the public under the same license.
+
+When distributing a modified version, the source code must be published, and this license must be included.
+
+4. Disclaimer
+
+This software is provided "as is" without any warranty. The author is not responsible for any damages resulting from its use.
+
+For the original GPLv3 license, visit:
+https://www.gnu.org/licenses/gpl-3.0.html
