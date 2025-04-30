@@ -3,7 +3,7 @@
 Battery Health Checker Application
 
 A modern Windows application for monitoring battery health with a clean GUI.
-Version: 0.7.0
+Version: 0.8.0
 """
 
 from src.gui.windows.main_window import BatteryHealthApp

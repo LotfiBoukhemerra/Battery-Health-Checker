@@ -53,7 +53,7 @@ class BatteryHealthApp(QMainWindow):
 
     def _setup_window_properties(self):
         """Set up window properties and icons."""
-        self.setWindowTitle('Battery Health Checker v 0.7.0')
+        self.setWindowTitle('Battery Health Checker v 0.8.0')
         self.setMinimumSize(900, 500)
 
         icon_path = get_resource_path("resources/icon.ico")
@@ -61,7 +61,7 @@ class BatteryHealthApp(QMainWindow):
             self.setWindowIcon(QIcon(icon_path))
             if sys.platform == 'win32':
                 # Set taskbar icon for Windows
-                myappid = 'com.elldev.batterychecker.0.7.0'
+                myappid = 'com.elldev.batterychecker.0.8.0'
                 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
                     myappid)
 
@@ -118,7 +118,7 @@ class BatteryHealthApp(QMainWindow):
         card = QWidget()
         card.setStyleSheet("""
             QWidget {
-                background-color: #2b2b2b;
+                background-color: #0c0f13;
                 border-radius: 12px;
             }
         """)
@@ -151,7 +151,7 @@ class BatteryHealthApp(QMainWindow):
         button.setCursor(Qt.CursorShape.PointingHandCursor)
         # button.setStyleSheet("""
         #     QPushButton {
-        #         background-color: #0070f0;
+        #         background-color: #3dbaff;
         #         color: white;
         #         border: none;
         #         border-radius: 8px;
@@ -160,7 +160,7 @@ class BatteryHealthApp(QMainWindow):
         #         font-weight: bold;
         #     }
         #     QPushButton:hover {
-        #         background-color: #0070f0;
+        #         background-color: #3dbaff;
         #     }
         #     QPushButton:pressed {
         #         background-color: #0058bd;
@@ -173,14 +173,14 @@ class BatteryHealthApp(QMainWindow):
         button.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
-                color: #0070f0;
-                border: 1px solid #0070f0;
+                color: #3dbaff;
+                border: 1px solid rgba(61, 186, 255, 0.5);
                 border-radius: 4px;
                 padding: 4px 12px;
                 font-size: 12px;
             }
             QPushButton:hover {
-                background-color: #0070f0;
+                background-color: #3dbaff;
                 color: white;
             }
         """)
@@ -193,7 +193,7 @@ class BatteryHealthApp(QMainWindow):
         footer_layout.setContentsMargins(10, 10, 10, 10)
 
         # Version label
-        version_label = QLabel("v0.7.0")
+        version_label = QLabel("v0.8.0")
         version_label.setStyleSheet("""
             color: #666666;
             font-size: 12px;
@@ -219,14 +219,14 @@ class BatteryHealthApp(QMainWindow):
         button.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
-                color: #0070f0;
-                border: 1px solid #0070f0;
+                color: #3dbaff;
+                border: 1px solid rgba(61, 186, 255, 0.5);
                 border-radius: 4px;
                 padding: 4px 12px;
                 font-size: 12px;
             }
             QPushButton:hover {
-                background-color: #0070f0;
+                background-color: #3dbaff;
                 color: white;
             }
         """)
@@ -238,10 +238,10 @@ class BatteryHealthApp(QMainWindow):
         """Set up application-wide styles."""
         self.setStyleSheet("""
             QMainWindow {
-                background-color: #202020;
+                background-color: #13171b;
             }
             QPushButton#checkButton {
-                background-color: #0070f0;
+                background-color: #3dbaff;
                 color: white;
                 border: none;
                 border-radius: 8px;
@@ -256,18 +256,18 @@ class BatteryHealthApp(QMainWindow):
                 background-color: #0058bd;
             }
             QPushButton#checkButton:disabled {
-                background-color: #2b2b2b;
+                background-color: #13171b;
                 color: #666666;
             }
             QProgressBar {
                 border: none;
-                background-color: #2b2b2b;
+                background-color: #13171b;
                 border-radius: 5px;
                 height: 6px;
                 text-align: center;
             }
             QProgressBar::chunk {
-                background-color: #0070f0;
+                background-color: #3dbaff;
                 border-radius: 5px;
             }
             QLabel#detailsLabel {
@@ -284,7 +284,7 @@ class BatteryHealthApp(QMainWindow):
         """Start the battery health check process."""
         # Reset UI to default state
         # Reset to default blue color and empty text
-        self.status_indicator.update_status(QColor("#0070f0"), "")
+        self.status_indicator.update_status(QColor("#3dbaff"), "")
         self.details_label.setText("Checking battery health...")
         self.progress_bar.setValue(0)
         self.progress_bar.show()

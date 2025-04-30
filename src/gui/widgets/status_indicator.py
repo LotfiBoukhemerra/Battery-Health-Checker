@@ -9,10 +9,11 @@ from PyQt6.QtWidgets import QFrame
 from PyQt6.QtCore import Qt, QPropertyAnimation, QEasingCurve, pyqtProperty, QRectF
 from PyQt6.QtGui import QPainter, QPainterPath, QFont, QColor, QPen, QLinearGradient
 
+
 class StatusIndicator(QFrame):
     """
     Custom widget for displaying battery health status with animations.
-    
+
     Features:
     - Animated battery level indicator
     - Smooth color transitions
@@ -34,15 +35,15 @@ class StatusIndicator(QFrame):
 
     def _init_properties(self):
         """Initialize widget properties."""
-        self._color = QColor("#0070f0")  # Default blue color
+        self._color = QColor("#3dbaff")  # Default blue color
         self.status_text = ""  # Empty initial text
         self._percentage = 0
-        
+
         # Setup color animation
         self._color_animation = QPropertyAnimation(self, b"color")
         self._color_animation.setDuration(500)
         self._color_animation.setEasingCurve(QEasingCurve.Type.OutCubic)
-        
+
         # Setup percentage animation
         self._percentage_animation = QPropertyAnimation(self, b"percentage")
         self._percentage_animation.setDuration(1000)
@@ -51,7 +52,7 @@ class StatusIndicator(QFrame):
     def paintEvent(self, event):
         """
         Custom paint event to draw the battery indicator.
-        
+
         Args:
             event: QPaintEvent instance
         """
@@ -65,7 +66,8 @@ class StatusIndicator(QFrame):
         tip_height = 40
 
         # Draw battery outline
-        self._draw_battery_outline(painter, body_width, body_height, tip_width, tip_height)
+        self._draw_battery_outline(
+            painter, body_width, body_height, tip_width, tip_height)
 
         # Draw battery level
         if self._percentage > 0:
@@ -77,10 +79,10 @@ class StatusIndicator(QFrame):
     def _draw_battery_outline(self, painter, body_width, body_height, tip_width, tip_height):
         """Draw the battery outline with shadow effect."""
         path = QPainterPath()
-        
+
         # Main battery body with rounder corners
         path.addRoundedRect(20, 10, body_width, body_height, 15, 15)
-        
+
         # Battery tip
         tip_x = body_width + 20
         tip_y = (self.height() - tip_height) // 2
@@ -94,21 +96,21 @@ class StatusIndicator(QFrame):
         # Draw outline with gradient
         gradient = self._create_background_gradient(path.boundingRect())
         painter.setBrush(gradient)
-        painter.setPen(QPen(QColor("#3a3a3a"), 2))
+        painter.setPen(QPen(QColor("#13171b"), 2))
         painter.drawPath(path)
 
     def _create_background_gradient(self, rect):
         """Create a subtle gradient for the battery background."""
         gradient = QLinearGradient(rect.topLeft(), rect.bottomRight())
-        gradient.setColorAt(0, QColor("#2b2b2b"))
-        gradient.setColorAt(1, QColor("#323232"))
+        gradient.setColorAt(0, QColor("#13171b"))
+        gradient.setColorAt(1, QColor("#2d3741"))
         return gradient
 
     def _draw_battery_level(self, painter, body_width, body_height):
         """Draw the battery level indicator with glow effect."""
         level_width = (body_width - 10) * (self._percentage / 100)
         level_rect = QRectF(25, 15, level_width, body_height - 10)
-        
+
         # Draw glow effect
         glow_color = QColor(self._color)
         glow_color.setAlpha(30)
@@ -116,7 +118,7 @@ class StatusIndicator(QFrame):
         painter.setBrush(glow_color)
         glow_rect = level_rect.adjusted(-5, -5, 5, 5)
         painter.drawRoundedRect(glow_rect, 12, 12)
-        
+
         # Draw main level
         painter.setBrush(QColor(self._color))
         painter.drawRoundedRect(level_rect, 12, 12)
@@ -126,12 +128,13 @@ class StatusIndicator(QFrame):
         painter.setPen(QColor("#ffffff"))
         font = QFont("Segoe UI", 24, QFont.Weight.Bold)
         painter.setFont(font)
-        painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, self.status_text)
+        painter.drawText(
+            self.rect(), Qt.AlignmentFlag.AlignCenter, self.status_text)
 
     def update_status(self, color: QColor, text: str):
         """
         Update the status indicator with new color and text.
-        
+
         Args:
             color: QColor for the battery level
             text: Status text to display
@@ -140,7 +143,7 @@ class StatusIndicator(QFrame):
         self._color_animation.setStartValue(self._color)
         self._color_animation.setEndValue(color)
         self._color_animation.start()
-        
+
         # Animate percentage change
         try:
             new_percentage = float(text.strip('%'))
@@ -149,7 +152,7 @@ class StatusIndicator(QFrame):
             self._percentage_animation.start()
         except ValueError:
             self._percentage = 0
-        
+
         self.status_text = text
         self.update()
 
