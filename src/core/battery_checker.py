@@ -2,6 +2,7 @@
 Battery Health Checker Core Module
 
 This module implements the core domain logic for battery health checking
+with support for multiple batteries
 """
 
 import os
@@ -9,7 +10,7 @@ import subprocess
 import re
 import sys
 import time
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
 
@@ -23,6 +24,15 @@ HEALTH_THRESHOLDS = {
     'FAIR': 50,
     'POOR': 30
 }
+
+
+@dataclass
+class BatteryInfo:
+    """Information about a single battery."""
+    id: str
+    name: str
+    device_id: str
+    availability: str
 
 
 @dataclass
@@ -71,6 +81,76 @@ class SystemService:
                 ).returncode == 0
             except:
                 return False
+
+    @staticmethod
+    def get_battery_list() -> List[BatteryInfo]:
+        """Get list of all batteries in the system."""
+        batteries = []
+        
+        try:
+            # Use WMIC to get detailed battery information
+            result = subprocess.run(
+                ['WMIC', 'Path', 'Win32_Battery', 'Get', 'DeviceID,Name,Availability', '/format:csv'],
+                capture_output=True,
+                text=True,
+                creationflags=CREATE_NO_WINDOW
+            )
+            
+            if result.returncode == 0 and result.stdout.strip():
+                lines = result.stdout.strip().split('\n')
+                # Skip header line
+                for line in lines[1:]:
+                    if line.strip():
+                        parts = line.split(',')
+                        if len(parts) >= 4:  # Node,Availability,DeviceID,Name
+                            availability = parts[1].strip() if len(parts) > 1 else ""
+                            device_id = parts[2].strip() if len(parts) > 2 else ""
+                            name = parts[3].strip() if len(parts) > 3 else ""
+                            
+                            if device_id and name:
+                                battery_info = BatteryInfo(
+                                    id=device_id,
+                                    name=name,
+                                    device_id=device_id,
+                                    availability=availability
+                                )
+                                batteries.append(battery_info)
+            
+            # Fallback: If WMIC doesn't return detailed info, use simpler approach
+            if not batteries:
+                result = subprocess.run(
+                    ['WMIC', 'Path', 'Win32_Battery', 'Get', 'DeviceID'],
+                    capture_output=True,
+                    text=True,
+                    creationflags=CREATE_NO_WINDOW
+                )
+                
+                if result.returncode == 0 and result.stdout.strip():
+                    lines = result.stdout.strip().split('\n')
+                    battery_count = 0
+                    for line in lines[1:]:  # Skip header
+                        if line.strip():
+                            battery_count += 1
+                            battery_info = BatteryInfo(
+                                id=f"BATTERY_{battery_count}",
+                                name=f"Battery {battery_count}",
+                                device_id=line.strip(),
+                                availability="Available"
+                            )
+                            batteries.append(battery_info)
+                            
+        except Exception as e:
+            print(f"Error getting battery list: {str(e)}")
+            # If all else fails, check if at least one battery exists
+            if SystemService.check_battery_exists():
+                batteries.append(BatteryInfo(
+                    id="BATTERY_1",
+                    name="Battery 1",
+                    device_id="DEFAULT",
+                    availability="Available"
+                ))
+        
+        return batteries
 
     @staticmethod
     def check_battery_exists() -> bool:
@@ -137,13 +217,17 @@ class BatteryReportRepository:
             'battery_report.html'
         )
 
-    def generate_report(self) -> bool:
+    def generate_report(self, battery_id: str = None) -> bool:
+        """Generate battery report for specific battery or all batteries."""
         try:
             if os.path.exists(self.report_path):
                 os.remove(self.report_path)
 
+            # Generate report for specific battery if ID provided
+            cmd = ['powercfg', '/batteryreport', '/output', self.report_path]
+            
             result = subprocess.run(
-                ['powercfg', '/batteryreport', '/output', self.report_path],
+                cmd,
                 capture_output=True,
                 text=True,
                 creationflags=CREATE_NO_WINDOW
@@ -155,7 +239,8 @@ class BatteryReportRepository:
             print(f"Failed to generate battery report: {str(e)}")
             return False
 
-    def extract_capacity_values(self) -> Optional[BatteryCapacity]:
+    def extract_capacity_values(self, battery_index: int = 0) -> Optional[BatteryCapacity]:
+        """Extract capacity values for specific battery by index."""
         try:
             if not os.path.exists(self.report_path):
                 return None
@@ -163,9 +248,10 @@ class BatteryReportRepository:
             with open(self.report_path, 'r', encoding='utf-8') as file:
                 soup = BeautifulSoup(file.read(), 'html.parser')
 
-            design_capacity = None
-            full_charge_capacity = None
-
+            # Find all battery information sections
+            battery_sections = []
+            current_battery = {}
+            
             for table in soup.find_all('table'):
                 for row in table.find_all('tr'):
                     cells = row.find_all('td')
@@ -174,14 +260,36 @@ class BatteryReportRepository:
                         value = cells[1].get_text().strip()
 
                         if "DESIGN CAPACITY" in label:
-                            design_capacity = self._extract_numeric_value(
-                                value)
+                            if current_battery and 'design_capacity' in current_battery:
+                                # Save current battery info and start new one
+                                battery_sections.append(current_battery)
+                                current_battery = {}
+                            current_battery['design_capacity'] = self._extract_numeric_value(value)
                         elif "FULL CHARGE CAPACITY" in label:
-                            full_charge_capacity = self._extract_numeric_value(
-                                value)
+                            current_battery['full_charge_capacity'] = self._extract_numeric_value(value)
 
-            if design_capacity and full_charge_capacity:
-                return BatteryCapacity(design_capacity, full_charge_capacity)
+            # Add the last battery if it exists
+            if current_battery:
+                battery_sections.append(current_battery)
+
+            # Return the requested battery's data
+            if battery_index < len(battery_sections):
+                battery_data = battery_sections[battery_index]
+                if battery_data.get('design_capacity') and battery_data.get('full_charge_capacity'):
+                    return BatteryCapacity(
+                        battery_data['design_capacity'], 
+                        battery_data['full_charge_capacity']
+                    )
+            
+            # Fallback: if no specific battery found, return first available data
+            if battery_sections:
+                battery_data = battery_sections[0]
+                if battery_data.get('design_capacity') and battery_data.get('full_charge_capacity'):
+                    return BatteryCapacity(
+                        battery_data['design_capacity'], 
+                        battery_data['full_charge_capacity']
+                    )
+
             return None
 
         except Exception as e:
@@ -199,30 +307,44 @@ class BatteryReportRepository:
             return None
 
 
-class BatteryHealthChecker:
-    """Core service for checking battery health."""
+class MultiBatteryHealthChecker:
+    """Core service for checking health of multiple batteries."""
 
     def __init__(self, report_path: str = None):
         """Initialize the service with optional custom report path."""
         self.system_service = SystemService()
         self.repository = BatteryReportRepository(report_path)
         self.logger = BatteryLogger()
+        self._batteries = []
 
-    def check_battery_health(self) -> Optional[Dict]:
-        """Perform complete battery health check."""
-        self.logger.info("Starting battery health check")
+    def get_available_batteries(self) -> List[BatteryInfo]:
+        """Get list of all available batteries."""
+        if not self._batteries:
+            self._batteries = self.system_service.get_battery_list()
+        return self._batteries
 
-        if not self.system_service.check_battery_exists():
-            self.logger.error("No battery detected in system")
+    def check_battery_health(self, battery_index: int = 0) -> Optional[Dict]:
+        """Perform battery health check for specific battery."""
+        batteries = self.get_available_batteries()
+        
+        if not batteries:
+            self.logger.error("No batteries detected in system")
+            return None
+            
+        if battery_index >= len(batteries):
+            self.logger.error(f"Battery index {battery_index} out of range")
             return None
 
-        self.logger.info("Battery detected, generating report")
-        if not self.repository.generate_report():
+        selected_battery = batteries[battery_index]
+        self.logger.info(f"Starting battery health check for {selected_battery.name}")
+
+        self.logger.info("Generating battery report")
+        if not self.repository.generate_report(selected_battery.device_id):
             self.logger.error("Failed to generate battery report")
             return None
 
         self.logger.info("Report generated, extracting capacity values")
-        capacity = self.repository.extract_capacity_values()
+        capacity = self.repository.extract_capacity_values(battery_index)
         if not capacity:
             self.logger.error("Failed to extract capacity values from report")
             return None
@@ -240,9 +362,11 @@ class BatteryHealthChecker:
 
         health_status = BatteryHealthStatus(health_percentage)
         self.logger.info(
-            f"Health check completed: {health_percentage}% - {health_status.status}")
+            f"Health check completed for {selected_battery.name}: {health_percentage}% - {health_status.status}")
 
         return {
+            'battery_name': selected_battery.name,
+            'battery_id': selected_battery.id,
             'design_capacity': capacity.design_capacity,
             'full_charge_capacity': capacity.full_charge_capacity,
             'health_percentage': health_percentage,
@@ -260,3 +384,38 @@ class BatteryHealthChecker:
             return None
         except Exception:
             return None
+
+
+# Backward compatibility
+class BatteryHealthChecker(MultiBatteryHealthChecker):
+    """Legacy single battery checker for backward compatibility."""
+    
+    def check_battery_health(self) -> Optional[Dict]:
+        """Check health of first available battery."""
+        result = super().check_battery_health(0)
+        if result:
+            # Remove battery-specific fields for backward compatibility
+            result.pop('battery_name', None)
+            result.pop('battery_id', None)
+        return result
+
+
+if __name__ == "__main__":
+    checker = MultiBatteryHealthChecker()
+    batteries = checker.get_available_batteries()
+    
+    if batteries:
+        print(f"Found {len(batteries)} battery(ies):")
+        for i, battery in enumerate(batteries):
+            print(f"  {i+1}. {battery.name} (ID: {battery.id})")
+            
+        # Check each battery
+        for i in range(len(batteries)):
+            print(f"\nChecking {batteries[i].name}...")
+            result = checker.check_battery_health(i)
+            if result:
+                print(f"Battery Health: {result['health_percentage']}% - {result['status']}")
+            else:
+                print("Battery health check failed.")
+    else:
+        print("No batteries detected.")
