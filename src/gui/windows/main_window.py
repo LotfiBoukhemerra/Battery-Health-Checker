@@ -297,13 +297,13 @@ class BatteryHealthApp(QMainWindow):
         footer_layout.addStretch()
 
         # Donation links
-        paypal_btn = self._create_link_button(
-            "Support via PayPal", "https://www.paypal.com/paypalme/LotfiBoukhemerra")
-        coffee_btn = self._create_link_button(
-            "Buy me a Coffee", "https://buymeacoffee.com/eldev")
+        # paypal_btn = self._create_link_button(
+        #     "Support via PayPal", "https://www.paypal.com/paypalme/LotfiBoukhemerra")
+        # coffee_btn = self._create_link_button(
+        #     "Buy me a Coffee", "https://buymeacoffee.com/eldev")
 
-        footer_layout.addWidget(paypal_btn)
-        footer_layout.addWidget(coffee_btn)
+        # footer_layout.addWidget(paypal_btn)
+        # footer_layout.addWidget(coffee_btn)
 
         layout.addWidget(footer)
 

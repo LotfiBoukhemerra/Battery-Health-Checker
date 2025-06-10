@@ -238,8 +238,82 @@ class BatteryReportRepository:
         except Exception as e:
             print(f"Failed to generate battery report: {str(e)}")
             return False
-
+        
     def extract_capacity_values(self, battery_index: int = 0) -> Optional[BatteryCapacity]:
+        """Extract capacity values for specific battery by index."""
+        try:
+            if not os.path.exists(self.report_path):
+                return None
+
+            with open(self.report_path, 'r', encoding='utf-8') as file:
+                soup = BeautifulSoup(file.read(), 'html.parser')
+
+            # Find the battery information table by searching through all tables
+            battery_data = {}  # Will store data for each battery index
+            
+            for table in soup.find_all('table'):
+                table_has_battery_info = False
+                
+                for row in table.find_all('tr'):
+                    cells = row.find_all('td')
+                    
+                    if len(cells) >= 2:  # Need at least 2 columns (label + 1 battery)
+                        label = cells[0].get_text().strip().upper()
+                        
+                        if "DESIGN CAPACITY" in label or "FULL CHARGE CAPACITY" in label:
+                            table_has_battery_info = True
+                            
+                            if "DESIGN CAPACITY" in label:
+                                # Extract design capacity for each battery
+                                for i in range(1, len(cells)):  # Start from 1 to skip the label column
+                                    battery_idx = i - 1  # Convert to 0-based index
+                                    value = cells[i].get_text().strip()
+                                    if battery_idx not in battery_data:
+                                        battery_data[battery_idx] = {}
+                                    battery_data[battery_idx]['design_capacity'] = self._extract_numeric_value(value)
+                            
+                            elif "FULL CHARGE CAPACITY" in label:
+                                # Extract full charge capacity for each battery
+                                for i in range(1, len(cells)):  # Start from 1 to skip the label column
+                                    battery_idx = i - 1  # Convert to 0-based index
+                                    value = cells[i].get_text().strip()
+                                    if battery_idx not in battery_data:
+                                        battery_data[battery_idx] = {}
+                                    battery_data[battery_idx]['full_charge_capacity'] = self._extract_numeric_value(value)
+                
+                # If we found battery info in this table, we can stop searching
+                if table_has_battery_info:
+                    break
+            
+            if not battery_data:
+                return None
+
+            # Return the requested battery's data
+            if battery_index in battery_data:
+                battery_info = battery_data[battery_index]
+                if battery_info.get('design_capacity') and battery_info.get('full_charge_capacity'):
+                    return BatteryCapacity(
+                        battery_info['design_capacity'], 
+                        battery_info['full_charge_capacity']
+                    )
+
+            # Fallback: if no specific battery found, return first available data
+            if battery_data:
+                first_battery = list(battery_data.values())[0]
+                if first_battery.get('design_capacity') and first_battery.get('full_charge_capacity'):
+                    return BatteryCapacity(
+                        first_battery['design_capacity'], 
+                        first_battery['full_charge_capacity']
+                    )
+
+            return None
+
+        except Exception as e:
+            print(f"Failed to extract capacity values: {str(e)}")
+            return None
+
+
+    def extract_capacity_values_old(self, battery_index: int = 0) -> Optional[BatteryCapacity]:
         """Extract capacity values for specific battery by index."""
         try:
             if not os.path.exists(self.report_path):
@@ -268,10 +342,12 @@ class BatteryReportRepository:
                         elif "FULL CHARGE CAPACITY" in label:
                             current_battery['full_charge_capacity'] = self._extract_numeric_value(value)
 
+            print(current_battery)
+
             # Add the last battery if it exists
             if current_battery:
                 battery_sections.append(current_battery)
-
+            print(battery_sections)
             # Return the requested battery's data
             if battery_index < len(battery_sections):
                 battery_data = battery_sections[battery_index]
@@ -326,7 +402,6 @@ class MultiBatteryHealthChecker:
     def check_battery_health(self, battery_index: int = 0) -> Optional[Dict]:
         """Perform battery health check for specific battery."""
         batteries = self.get_available_batteries()
-        
         if not batteries:
             self.logger.error("No batteries detected in system")
             return None
@@ -334,7 +409,7 @@ class MultiBatteryHealthChecker:
         if battery_index >= len(batteries):
             self.logger.error(f"Battery index {battery_index} out of range")
             return None
-
+        print("Batteries",batteries)
         selected_battery = batteries[battery_index]
         self.logger.info(f"Starting battery health check for {selected_battery.name}")
 
@@ -345,6 +420,7 @@ class MultiBatteryHealthChecker:
 
         self.logger.info("Report generated, extracting capacity values")
         capacity = self.repository.extract_capacity_values(battery_index)
+        print(capacity)
         if not capacity:
             self.logger.error("Failed to extract capacity values from report")
             return None
