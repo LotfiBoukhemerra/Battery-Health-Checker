@@ -84,6 +84,7 @@ def main():
         sys.exit(app.exec())
 
     except Exception as e:
+        # raise e
         print(f"Fatal error: {str(e)}")
         sys.exit(1)
 

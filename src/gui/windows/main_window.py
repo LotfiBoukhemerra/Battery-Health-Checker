@@ -1,7 +1,8 @@
 """
 Main Window Module
 
-This module provides the main application window with battery health monitoring interface.
+This module provides the main application window with battery health monitoring interface
+supporting multiple batteries.
 """
 
 import sys
@@ -9,27 +10,121 @@ import os
 import ctypes
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout,
                              QPushButton, QLabel, QProgressBar, QHBoxLayout,
-                             QFrame)
-from PyQt6.QtCore import Qt, QUrl
+                             QFrame, QButtonGroup, QRadioButton)
+from PyQt6.QtCore import Qt, QUrl, pyqtSignal
 from PyQt6.QtGui import QIcon, QColor, QDesktopServices
 
 from src.gui.widgets.status_indicator import StatusIndicator
-from src.gui.workers.battery_check_worker import BatteryCheckWorker
+from src.gui.workers.battery_check_worker import MultiBatteryCheckWorker
 from src.utils.resource_helper import get_resource_path
+
+
+class BatterySelectionWidget(QWidget):
+    """Widget for selecting between multiple batteries."""
+    
+    battery_changed = pyqtSignal(int)  # Signal emitted when battery selection changes
+    
+    def __init__(self):
+        super().__init__()
+        self.battery_buttons = []
+        self.button_group = QButtonGroup()
+        self._setup_ui()
+        
+    def _setup_ui(self):
+        """Initialize the battery selection UI."""
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(10)
+        
+        # Battery count indicator
+        self.count_label = QLabel("No batteries detected")
+        self.count_label.setStyleSheet("""
+            color: #666666;
+            font-size: 12px;
+            font-weight: bold;
+        """)
+        self.layout.addWidget(self.count_label)
+        self.layout.addStretch()
+        
+    def update_batteries(self, batteries):
+        """Update the battery selection options."""
+        # Clear existing buttons
+        for button in self.battery_buttons:
+            self.button_group.removeButton(button)
+            button.deleteLater()
+        self.battery_buttons.clear()
+        
+        # Update count label
+        battery_count = len(batteries)
+        if battery_count == 0:
+            self.count_label.setText("No batteries detected")
+            self.count_label.setStyleSheet("color: #ff5252; font-size: 12px; font-weight: bold;")
+        elif battery_count == 1:
+            self.count_label.setText("1 battery detected")
+            self.count_label.setStyleSheet("color: #06c86f; font-size: 12px; font-weight: bold;")
+        else:
+            self.count_label.setText(f"{battery_count} batteries detected")
+            self.count_label.setStyleSheet("color: #06c86f; font-size: 12px; font-weight: bold;")
+        
+        # Add radio buttons for each battery
+        if battery_count > 1:
+            for i, battery in enumerate(batteries):
+                radio_button = QRadioButton(f"Battery {i+1}")
+                radio_button.setStyleSheet("""
+                    QRadioButton {
+                        color: #ffffff;
+                        font-size: 12px;
+                        spacing: 5px;
+                    }
+                    QRadioButton::indicator {
+                        width: 14px;
+                        height: 14px;
+                    }
+                    QRadioButton::indicator:unchecked {
+                        border: 2px solid #666666;
+                        border-radius: 7px;
+                        background-color: transparent;
+                    }
+                    QRadioButton::indicator:checked {
+                        border: 2px solid #3dbaff;
+                        border-radius: 7px;
+                        background-color: #3dbaff;
+                    }
+                    QRadioButton::indicator:hover {
+                        border: 2px solid #3dbaff;
+                    }
+                """)
+                
+                if i == 0:  # Select first battery by default
+                    radio_button.setChecked(True)
+                
+                self.battery_buttons.append(radio_button)
+                self.button_group.addButton(radio_button, i)
+                self.layout.addWidget(radio_button)
+                
+            # Connect signal
+            self.button_group.idClicked.connect(self.battery_changed.emit)
+    
+    def get_selected_battery(self) -> int:
+        """Get the index of the currently selected battery."""
+        return self.button_group.checkedId() if self.button_group.checkedId() != -1 else 0
 
 
 class BatteryHealthApp(QMainWindow):
     """
-    Main application window.
+    Main application window with multi-battery support.
     """
 
     def __init__(self):
         """Initialize the main window."""
         super().__init__()
         self.worker = None
+        self.batteries = []
+        self.current_battery_index = 0
         self._init_ui()
         self._setup_window_properties()
         self._setup_styles()
+        self._detect_batteries()
 
     def _init_ui(self):
         """Initialize the user interface components."""
@@ -39,6 +134,11 @@ class BatteryHealthApp(QMainWindow):
         layout = QVBoxLayout(central_widget)
         layout.setSpacing(20)
         layout.setContentsMargins(40, 40, 40, 20)
+
+        # Battery selection widget
+        self.battery_selector = BatterySelectionWidget()
+        self.battery_selector.battery_changed.connect(self._on_battery_changed)
+        layout.addWidget(self.battery_selector)
 
         # Main content area
         content_layout = QHBoxLayout()
@@ -53,15 +153,15 @@ class BatteryHealthApp(QMainWindow):
 
     def _setup_window_properties(self):
         """Set up window properties and icons."""
-        self.setWindowTitle('Battery Health Checker v 0.8.0')
-        self.setMinimumSize(900, 500)
+        self.setWindowTitle('Multi-Battery Health Checker v 0.9.0')
+        self.setMinimumSize(900, 550)
 
         icon_path = get_resource_path("resources/icon.ico")
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
             if sys.platform == 'win32':
                 # Set taskbar icon for Windows
-                myappid = 'com.elldev.batterychecker.0.8.0'
+                myappid = 'com.elldev.batterychecker.0.9.0'
                 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
                     myappid)
 
@@ -96,6 +196,7 @@ class BatteryHealthApp(QMainWindow):
         self.details_label = QLabel()
         self.details_label.setObjectName("detailsLabel")
         self.details_label.setWordWrap(True)
+        self.details_label.setText("Select a battery and click 'Check Battery Health' to begin.")
         right_layout.addWidget(self.details_label)
 
         self.progress_bar = self._create_progress_bar()
@@ -108,6 +209,11 @@ class BatteryHealthApp(QMainWindow):
 
         self.check_button = self._create_check_button()
         button_layout.addWidget(self.check_button)
+        
+        # Refresh batteries button
+        self.refresh_button = self._create_refresh_button()
+        button_layout.addWidget(self.refresh_button)
+        
         button_layout.addStretch()
 
         right_layout.addWidget(button_container)
@@ -149,33 +255,21 @@ class BatteryHealthApp(QMainWindow):
         button.setFixedHeight(45)
         button.clicked.connect(self.start_check)
         button.setCursor(Qt.CursorShape.PointingHandCursor)
-        # button.setStyleSheet("""
-        #     QPushButton {
-        #         background-color: #3dbaff;
-        #         color: white;
-        #         border: none;
-        #         border-radius: 8px;
-        #         padding: 4px 16px;
-        #         font-size: 14px;
-        #         font-weight: bold;
-        #     }
-        #     QPushButton:hover {
-        #         background-color: #3dbaff;
-        #     }
-        #     QPushButton:pressed {
-        #         background-color: #0058bd;
-        #     }
-        #     QPushButton:disabled {
-        #         background-color: #2b2b2b;
-        #         color: #666666;
-        #     }
-        # """)
+        return button
+
+    def _create_refresh_button(self) -> QPushButton:
+        """Create the refresh batteries button."""
+        button = QPushButton('Refresh')
+        button.setFixedWidth(80)
+        button.setFixedHeight(45)
+        button.clicked.connect(self._detect_batteries)
+        button.setCursor(Qt.CursorShape.PointingHandCursor)
         button.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
                 color: #3dbaff;
                 border: 1px solid rgba(61, 186, 255, 0.5);
-                border-radius: 4px;
+                border-radius: 8px;
                 padding: 4px 12px;
                 font-size: 12px;
             }
@@ -193,7 +287,7 @@ class BatteryHealthApp(QMainWindow):
         footer_layout.setContentsMargins(10, 10, 10, 10)
 
         # Version label
-        version_label = QLabel("v0.8.0")
+        version_label = QLabel("v0.9.0")
         version_label.setStyleSheet("""
             color: #666666;
             font-size: 12px;
@@ -203,13 +297,13 @@ class BatteryHealthApp(QMainWindow):
         footer_layout.addStretch()
 
         # Donation links
-        paypal_btn = self._create_link_button(
-            "Support via PayPal", "https://www.paypal.com/paypalme/LotfiBoukhemerra")
-        coffee_btn = self._create_link_button(
-            "Buy me a Coffee", "https://buymeacoffee.com/eldev")
+        # paypal_btn = self._create_link_button(
+        #     "Support via PayPal", "https://www.paypal.com/paypalme/LotfiBoukhemerra")
+        # coffee_btn = self._create_link_button(
+        #     "Buy me a Coffee", "https://buymeacoffee.com/eldev")
 
-        footer_layout.addWidget(paypal_btn)
-        footer_layout.addWidget(coffee_btn)
+        # footer_layout.addWidget(paypal_btn)
+        # footer_layout.addWidget(coffee_btn)
 
         layout.addWidget(footer)
 
@@ -280,17 +374,56 @@ class BatteryHealthApp(QMainWindow):
             }
         """)
 
+    def _detect_batteries(self):
+        """Detect available batteries and update UI."""
+        from src.core.battery_checker import MultiBatteryHealthChecker
+        
+        checker = MultiBatteryHealthChecker()
+        self.batteries = checker.get_available_batteries()
+        self.battery_selector.update_batteries(self.batteries)
+        
+        # Enable/disable check button based on battery availability
+        self.check_button.setEnabled(len(self.batteries) > 0)
+        
+        if len(self.batteries) == 0:
+            self.details_label.setText("No batteries detected. Please check your system or refresh.")
+            self.status_indicator.update_status(QColor("#666666"), "No Battery")
+        else:
+            self.current_battery_index = 0
+            battery_name = self.batteries[0].name if self.batteries else "Unknown"
+            self.details_label.setText(f"Ready to check {battery_name}. Click 'Check Battery Health' to begin.")
+            self.status_indicator.update_status(QColor("#3dbaff"), "Ready")
+
+    def _on_battery_changed(self, battery_index: int):
+        """Handle battery selection change."""
+        self.current_battery_index = battery_index
+        if battery_index < len(self.batteries):
+            battery_name = self.batteries[battery_index].name
+            self.details_label.setText(f"Ready to check {battery_name}. Click 'Check Battery Health' to begin.")
+            self.status_indicator.update_status(QColor("#3dbaff"), "Ready")
+
     def start_check(self):
         """Start the battery health check process."""
+        if not self.batteries:
+            self.details_label.setText("No batteries available for checking.")
+            return
+
+        # Get selected battery index
+        selected_index = self.battery_selector.get_selected_battery()
+        if selected_index >= len(self.batteries):
+            selected_index = 0
+
+        selected_battery = self.batteries[selected_index]
+        
         # Reset UI to default state
-        # Reset to default blue color and empty text
         self.status_indicator.update_status(QColor("#3dbaff"), "")
-        self.details_label.setText("Checking battery health...")
+        self.details_label.setText(f"Checking {selected_battery.name} health...")
         self.progress_bar.setValue(0)
         self.progress_bar.show()
         self.check_button.setEnabled(False)
+        self.refresh_button.setEnabled(False)
 
-        self.worker = BatteryCheckWorker()
+        self.worker = MultiBatteryCheckWorker(selected_index)
         self.worker.finished.connect(self.handle_results)
         self.worker.error.connect(self.handle_error)
         self.worker.progress.connect(self.progress_bar.setValue)
@@ -299,6 +432,7 @@ class BatteryHealthApp(QMainWindow):
     def handle_results(self, results: dict):
         """Process and display the battery check results."""
         health = results['health_percentage']
+        battery_name = results.get('battery_name', 'Battery')
 
         # Determine status color and text
         if health >= 80:
@@ -316,8 +450,10 @@ class BatteryHealthApp(QMainWindow):
         # Update UI
         self.status_indicator.update_status(color, f"{health:.0f}%")
         self.details_label.setText(
+            f"Battery: {battery_name}\n"
             f"Design Capacity: {results['design_capacity']:,.0f} mWh\n"
             f"Current Capacity: {results['full_charge_capacity']:,.0f} mWh\n"
+            f"Health: {health:.1f}%\n"
             f"Status: Battery is in {status} condition"
         )
 
@@ -326,10 +462,11 @@ class BatteryHealthApp(QMainWindow):
     def handle_error(self, error_message: str):
         """Handle and display error messages."""
         self.status_indicator.update_status(QColor("#C42B1C"), "Error")
-        self.details_label.setText(error_message)
+        self.details_label.setText(f"Error: {error_message}")
         self._reset_ui_state()
 
     def _reset_ui_state(self):
         """Reset UI elements to their default state."""
         self.check_button.setEnabled(True)
+        self.refresh_button.setEnabled(True)
         self.progress_bar.hide()
