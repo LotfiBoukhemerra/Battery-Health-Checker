@@ -445,7 +445,7 @@ class BatteryHealthApp(QMainWindow):
         battery_name = results.get('battery_name', 'Battery')
 
         # Determine status color and text
-        if health >= 90 and health < 100:
+        if health >= 90:
             color = QColor("#06c86f")
             status = "Battery is in excellent condition"
         elif health >= 70 and health < 90:
