@@ -21,21 +21,22 @@ from src.utils.resource_helper import get_resource_path
 
 class BatterySelectionWidget(QWidget):
     """Widget for selecting between multiple batteries."""
-    
-    battery_changed = pyqtSignal(int)  # Signal emitted when battery selection changes
-    
+
+    # Signal emitted when battery selection changes
+    battery_changed = pyqtSignal(int)
+
     def __init__(self):
         super().__init__()
         self.battery_buttons = []
         self.button_group = QButtonGroup()
         self._setup_ui()
-        
+
     def _setup_ui(self):
         """Initialize the battery selection UI."""
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(10)
-        
+
         # Battery count indicator
         self.count_label = QLabel("No batteries detected")
         self.count_label.setStyleSheet("""
@@ -45,7 +46,7 @@ class BatterySelectionWidget(QWidget):
         """)
         self.layout.addWidget(self.count_label)
         self.layout.addStretch()
-        
+
     def update_batteries(self, batteries):
         """Update the battery selection options."""
         # Clear existing buttons
@@ -53,19 +54,22 @@ class BatterySelectionWidget(QWidget):
             self.button_group.removeButton(button)
             button.deleteLater()
         self.battery_buttons.clear()
-        
+
         # Update count label
         battery_count = len(batteries)
         if battery_count == 0:
             self.count_label.setText("No batteries detected")
-            self.count_label.setStyleSheet("color: #ff5252; font-size: 12px; font-weight: bold;")
+            self.count_label.setStyleSheet(
+                "color: #ff5252; font-size: 12px; font-weight: bold;")
         elif battery_count == 1:
             self.count_label.setText("1 battery detected")
-            self.count_label.setStyleSheet("color: #06c86f; font-size: 12px; font-weight: bold;")
+            self.count_label.setStyleSheet(
+                "color: #06c86f; font-size: 12px; font-weight: bold;")
         else:
             self.count_label.setText(f"{battery_count} batteries detected")
-            self.count_label.setStyleSheet("color: #06c86f; font-size: 12px; font-weight: bold;")
-        
+            self.count_label.setStyleSheet(
+                "color: #06c86f; font-size: 12px; font-weight: bold;")
+
         # Add radio buttons for each battery
         if battery_count > 1:
             for i, battery in enumerate(batteries):
@@ -94,17 +98,17 @@ class BatterySelectionWidget(QWidget):
                         border: 2px solid #3dbaff;
                     }
                 """)
-                
+
                 if i == 0:  # Select first battery by default
                     radio_button.setChecked(True)
-                
+
                 self.battery_buttons.append(radio_button)
                 self.button_group.addButton(radio_button, i)
                 self.layout.addWidget(radio_button)
-                
+
             # Connect signal
             self.button_group.idClicked.connect(self.battery_changed.emit)
-    
+
     def get_selected_battery(self) -> int:
         """Get the index of the currently selected battery."""
         return self.button_group.checkedId() if self.button_group.checkedId() != -1 else 0
@@ -196,7 +200,8 @@ class BatteryHealthApp(QMainWindow):
         self.details_label = QLabel()
         self.details_label.setObjectName("detailsLabel")
         self.details_label.setWordWrap(True)
-        self.details_label.setText("Select a battery and click 'Check Battery Health' to begin.")
+        self.details_label.setText(
+            "Select a battery and click 'Check Battery Health' to begin.")
         right_layout.addWidget(self.details_label)
 
         self.progress_bar = self._create_progress_bar()
@@ -209,11 +214,11 @@ class BatteryHealthApp(QMainWindow):
 
         self.check_button = self._create_check_button()
         button_layout.addWidget(self.check_button)
-        
+
         # Refresh batteries button
         self.refresh_button = self._create_refresh_button()
         button_layout.addWidget(self.refresh_button)
-        
+
         button_layout.addStretch()
 
         right_layout.addWidget(button_container)
@@ -297,13 +302,13 @@ class BatteryHealthApp(QMainWindow):
         footer_layout.addStretch()
 
         # Donation links
-        # paypal_btn = self._create_link_button(
-        #     "Support via PayPal", "https://www.paypal.com/paypalme/LotfiBoukhemerra")
-        # coffee_btn = self._create_link_button(
-        #     "Buy me a Coffee", "https://buymeacoffee.com/eldev")
+        paypal_btn = self._create_link_button(
+            "Support via PayPal", "https://www.paypal.com/paypalme/LotfiBoukhemerra")
+        coffee_btn = self._create_link_button(
+            "Buy me a Coffee", "https://buymeacoffee.com/eldev")
 
-        # footer_layout.addWidget(paypal_btn)
-        # footer_layout.addWidget(coffee_btn)
+        footer_layout.addWidget(paypal_btn)
+        footer_layout.addWidget(coffee_btn)
 
         layout.addWidget(footer)
 
@@ -377,21 +382,24 @@ class BatteryHealthApp(QMainWindow):
     def _detect_batteries(self):
         """Detect available batteries and update UI."""
         from src.core.battery_checker import MultiBatteryHealthChecker
-        
+
         checker = MultiBatteryHealthChecker()
         self.batteries = checker.get_available_batteries()
         self.battery_selector.update_batteries(self.batteries)
-        
+
         # Enable/disable check button based on battery availability
         self.check_button.setEnabled(len(self.batteries) > 0)
-        
+
         if len(self.batteries) == 0:
-            self.details_label.setText("No batteries detected. Please check your system or refresh.")
-            self.status_indicator.update_status(QColor("#666666"), "No Battery")
+            self.details_label.setText(
+                "No batteries detected. Please check your system or refresh.")
+            self.status_indicator.update_status(
+                QColor("#666666"), "No Battery")
         else:
             self.current_battery_index = 0
             battery_name = self.batteries[0].name if self.batteries else "Unknown"
-            self.details_label.setText(f"Ready to check {battery_name}. Click 'Check Battery Health' to begin.")
+            self.details_label.setText(
+                f"Ready to check {battery_name}. Click 'Check Battery Health' to begin.")
             self.status_indicator.update_status(QColor("#3dbaff"), "Ready")
 
     def _on_battery_changed(self, battery_index: int):
@@ -399,7 +407,8 @@ class BatteryHealthApp(QMainWindow):
         self.current_battery_index = battery_index
         if battery_index < len(self.batteries):
             battery_name = self.batteries[battery_index].name
-            self.details_label.setText(f"Ready to check {battery_name}. Click 'Check Battery Health' to begin.")
+            self.details_label.setText(
+                f"Ready to check {battery_name}. Click 'Check Battery Health' to begin.")
             self.status_indicator.update_status(QColor("#3dbaff"), "Ready")
 
     def start_check(self):
@@ -414,10 +423,11 @@ class BatteryHealthApp(QMainWindow):
             selected_index = 0
 
         selected_battery = self.batteries[selected_index]
-        
+
         # Reset UI to default state
         self.status_indicator.update_status(QColor("#3dbaff"), "")
-        self.details_label.setText(f"Checking {selected_battery.name} health...")
+        self.details_label.setText(
+            f"Checking {selected_battery.name} health...")
         self.progress_bar.setValue(0)
         self.progress_bar.show()
         self.check_button.setEnabled(False)
@@ -435,15 +445,21 @@ class BatteryHealthApp(QMainWindow):
         battery_name = results.get('battery_name', 'Battery')
 
         # Determine status color and text
-        if health >= 80:
-            color = QColor("#06c86f")  # Green
-            status = "Excellent"
-        elif health >= 60:
-            color = QColor("#E6B455")  # Orange
-            status = "Good"
+        if health >= 90 and health < 100:
+            color = QColor("#06c86f")
+            status = "Battery is in excellent condition"
+        elif health >= 70 and health < 90:
+            color = QColor("#3cd662")
+            status = "Battery is performing well"
+        elif health >= 50 and health < 70:
+            color = QColor("#0dafd8")
+            status = "Battery health is moderate"
+        elif health >= 30 and health < 50:
+            color = QColor("#FFB300")
+            status = "Battery replacement may be needed soon"
         else:
-            color = QColor("#FF5252")  # Red
-            status = "Poor"
+            color = QColor("#FF5252")
+            status = "Battery replacement recommended"
 
         health = min(health, 100)
 
@@ -451,10 +467,12 @@ class BatteryHealthApp(QMainWindow):
         self.status_indicator.update_status(color, f"{health:.0f}%")
         self.details_label.setText(
             f"Battery: {battery_name}\n"
+
             f"Design Capacity: {results['design_capacity']:,.0f} mWh\n"
             f"Current Capacity: {results['full_charge_capacity']:,.0f} mWh\n"
+
             f"Health: {health:.1f}%\n"
-            f"Status: Battery is in {status} condition"
+            f"Status: {status}"
         )
 
         self._reset_ui_state()

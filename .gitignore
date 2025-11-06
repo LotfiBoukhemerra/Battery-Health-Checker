@@ -96,3 +96,5 @@ docs/_templates/
 *.zip
 *.rar
 *.7z
+
+battery_report_test.html
