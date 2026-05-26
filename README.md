@@ -1,170 +1,223 @@
-# Battery Health Checker
+<p align="center">
+  <img src="assets/images/logo.png" alt="Battery Health Checker" width="128" />
+</p>
 
+<h1 align="center">Battery Health Checker</h1>
+
+<p align="center">
+  <strong>A beautiful, open-source Windows desktop app to monitor your laptop battery health.</strong>
+</p>
+
+<p align="center">
+  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.41-02569B?logo=flutter" alt="Flutter" /></a>
+  <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.11-0175C2?logo=dart" alt="Dart" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg" alt="License" /></a>
+  <a href="https://github.com/LotfiBoukhemerra/Battery-Health-Checker/releases"><img src="https://img.shields.io/github/v/release/LotfiBoukhemerra/Battery-Health-Checker?label=Download" alt="Release" /></a>
+  <!-- <a href="https://github.com/LotfiBoukhemerra/Battery-Health-Checker/stargazers" title="Star"><img src="https://img.shields.io/github/stars/LotfiBoukhemerra/Battery-Health-Checker" alt="GitHub Stars" /></a>
+  <a href="https://github.com/LotfiBoukhemerra/Battery-Health-Checker/network/members" title="Fork"><img src="https://img.shields.io/github/forks/LotfiBoukhemerra/Battery-Health-Checker" alt="GitHub Forks" /></a> -->
+ 
+</p>
 <div align="center">
-
-<img src="resources/icon.png" alt="Battery Health Checker Logo" width="200"/>
-<!-- ![Battery Health Checker Logo](resources/icon.png) -->
-
-A Windows tool to monitor and analyze your laptop's battery health.
-
-[![PayPal](https://img.shields.io/badge/PayPal-Donate-blue.svg?logo=paypal&style=flat-square)](https://www.paypal.com/paypalme/LotfiBoukhemerra) [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donate-yellow.svg?logo=buy-me-a-coffee&style=flat-square)](https://buymeacoffee.com/eldev)
-
+  
+[![PayPal](https://img.shields.io/badge/PayPal-Donate-blue.svg?logo=paypal&style=flat-square)](https://www.paypal.com/paypalme/LotfiBoukhemerra) [![Ko-fi](https://img.shields.io/badge/Ko--fi-Donate-yellow.svg?logo=ko-fi&style=flat-square)](https://ko-fi.com/lotfibkmr)
 </div>
+---
 
-## Features
+## ✨ Features
 
--   🔋 get battery health insrtantly
--   📊 Detailed battery capacity analysis
--   💻 Windows native integration
--   ⚡ Fast and lightweight
+| Feature | Description |
+|---------|-------------|
+| 🎨 **New UI** | A beautiful, modern user interface with smooth animations and intuitive navigation. |
+| 🔋 **Real-time Monitoring** | Live battery level, charging state, and health percentage |
+| 📊 **Health Analysis** | Design vs. full-charge capacity comparison with color-coded status |
+| 🔔 **Smart Alerts** | Configurable low/high battery notifications via Windows toast |
+| 🖥️ **System Tray** | Minimize to tray to keep monitoring in the background |
+| 🚀 **Start with Windows** | Auto-launch at login via the Windows Registry |
+| 🌍 **Multi-language** | English, Arabic, and Spanish |
+| 🎨 **Themes** | Light, dark, and system-follow modes |
+| 🔄 **Auto-update Check** | Checks GitHub Releases for new versions on startup |
 
-## Prerequisites
+## 📸 Screenshots
 
-Before installing Battery Health Checker, ensure you have the following:
 
--   Windows 10/11 operating system
--   Administrator privileges (required for battery report generation)
+![Screenshot](./screenshots/Screenshot_1.png)
 
-if you want to test the code, you need:
 
--   Python 3.8 or higher
--   Git (optional, for cloning the repository)
+## 🏗️ Architecture
 
-## Installation
+The project follows a **clean architecture** pattern with clear separation of concerns:
 
-### Method 1: Using Pre-built Executable
+```
+lib/
+├── core/               # Shared utilities, themes, services, constants
+│   ├── constants/      # App-wide colors (AppColors) and constants
+│   ├── l10n/           # Localization strings (EN, AR, ES)
+│   ├── services/       # Tray, notification, startup, and update services
+│   ├── theme/          # Light/dark theme definitions & ThemeProvider
+│   ├── utils/          # Battery utility helpers
+│   └── widgets/        # Reusable widgets (GlassCard, AppErrorWidget)
+├── data/               # Data layer
+│   ├── datasources/    # Windows battery data source (powercfg parser)
+│   └── repositories/   # Repository implementations (Battery, Settings)
+├── domain/             # Domain layer
+│   ├── entities/       # BatteryInfo entity
+│   └── repositories/   # Abstract repository interfaces
+├── presentation/       # UI layer
+│   ├── pages/          # Screens (Battery, Alerts, Settings)
+│   ├── providers/      # ChangeNotifier state (Battery, Alerts, Update)
+│   └── widgets/        # UI components (WaveBatteryIndicator, DonateMenu, etc.)
+└── main.dart           # App entry point and window setup
+```
 
-1. Download the latest release from the [Releases](https://github.com/LotfiBoukhemerra/Battery-Health-Checker/releases/) page
-2. Extract the ZIP file to your desired location
-3. Run `BatteryHealthChecker.exe`
+### Key Design Decisions
 
-### Method 2: From Source Code
+- **State Management**: Built-in Flutter `ChangeNotifier` + `ListenableBuilder` — no third-party state packages.
+- **Battery Data**: Uses `powercfg /batteryreport` to generate an HTML report, then parses it with the `html` package to extract health data.
+- **Design System**: All colors are centralized in [`app_colors.dart`](lib/core/constants/app_colors.dart) for easy theming.
+- **Typography**: Uses bundled [Noto Sans Arabic](https://fonts.google.com/noto/specimen/Noto+Sans+Arabic) fonts for multi-script support (Latin + Arabic) without runtime network requests.
+- **Update Checking**: Queries the GitHub Releases API on startup and notifies the user if a newer version is available.
+- **Window Management**: Dynamic window height (70% of screen height, clamped to 600 px) adapts to different displays and DPI scaling.
+- **Background Optimization**: Animations are paused via `TickerMode` when the window is minimized or hidden to reduce CPU usage.
 
-1. Clone the repository or download the source code:
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Flutter SDK** `3.41+` (stable channel)
+- **Dart SDK** `3.11+`
+- **Windows 10/11** with a laptop battery
+- **Git** for cloning the repository
+
+### Option 1: Using Flutter directly
 
 ```bash
-git clone https://github.com/LotfiBoukhemerra/Battery-Health-Checker.git
-cd Battery-Health-Checker
+# 1. Clone the repository
+git clone https://github.com/LotfiBoukhemerra/Battery-Health-Checker-App.git
+cd Battery-Health-Checker-App
+
+# 2. Install dependencies
+flutter pub get
+
+# 3. Run in debug mode
+flutter run -d windows
+
+# 4. Build a release executable
+flutter build windows --release
 ```
 
-2. Create a virtual environment (recommended):
+The release build will be located at:
+```
+build/windows/x64/runner/Release/
+```
+
+### Option 2: Using FVM (Flutter Version Management)
+
+If you manage multiple Flutter versions with [FVM](https://fvm.app):
 
 ```bash
-python -m venv venv
-.\venv\Scripts\activate
+# 1. Install FVM (if not already installed)
+dart pub global activate fvm
+
+# 2. Clone and enter the project
+git clone https://github.com/LotfiBoukhemerra/Battery-Health-Checker-App.git
+cd Battery-Health-Checker-App
+
+# 3. Install the required Flutter version
+fvm install 3.41.7
+fvm use 3.41.7
+
+# 4. Install dependencies and run
+fvm flutter pub get
+fvm flutter run -d windows
 ```
 
-3. Install required dependencies:
+### Option 3: Using Puro
+
+[Puro](https://puro.dev) is a blazing-fast Flutter version manager:
 
 ```bash
-pip install -r requirements.txt
+# 1. Install Puro
+dart pub global activate puro
+
+# 2. Create an environment with the required Flutter version
+puro create battery_checker stable
+
+# 3. Clone and enter the project
+git clone https://github.com/LotfiBoukhemerra/Battery-Health-Checker-App.git
+cd Battery-Health-Checker-App
+
+# 4. Use the Puro environment
+puro use battery_checker
+
+# 5. Install dependencies and run
+flutter pub get
+flutter run -d windows
 ```
 
-## Usage
-
-### Running the Application
-
-1. **Using the executable:**
-
-    - Simply double-click `BatteryHealthChecker.exe`
-    - If prompted, allow administrator privileges
-
-2. **From source code:**
-    - Navigate to the project directory
-    - Run the launcher script:
-    ```bash
-    python launcher.py
-    ```
-
-### Features Guide
-
-1. **Check Battery Health**
-
-    - Click the "Check Battery Health" button
-    - Wait for the analysis to complete
-    - View detailed results including:
-        - Design Capacity
-        - Current Capacity
-        - Health Percentage
-        - Overall Status
-
-2. **Understanding Results**
-    - **Excellent** (90-100%): Battery is in optimal condition
-    - **Good** (70-89%): Battery is performing well
-    - **Fair** (50-69%): Consider monitoring battery performance
-    - **Poor** (30-49%): Battery replacement may be needed soon
-    - **Critical** (<30%): Battery replacement recommended
-
-## Building from Source
-
-To build the executable yourself:
-
-1. Ensure you have PyInstaller installed:
+## 🧪 Running Tests
 
 ```bash
-pip install pyinstaller
+flutter test
 ```
 
-2. Run the build script:
+## 📦 Dependencies
 
-```bash
-python src/build.py
-```
+| Package | Purpose |
+|---------|---------|
+| [`battery_plus`](https://pub.dev/packages/battery_plus) | Real-time battery level and charging state |
+| [`window_manager`](https://pub.dev/packages/window_manager) | Window size, minimize/close behavior |
+| [`system_tray`](https://pub.dev/packages/system_tray) | System tray icon and context menu |
+| [`local_notifier`](https://pub.dev/packages/local_notifier) | Windows toast notifications |
+| [`shared_preferences`](https://pub.dev/packages/shared_preferences) | Persistent user settings |
+| [`hugeicons`](https://pub.dev/packages/hugeicons) | Modern icon set |
+| [`html`](https://pub.dev/packages/html) | Parsing powercfg battery report HTML |
+| [`url_launcher`](https://pub.dev/packages/url_launcher) | Opening external links |
+| [`http`](https://pub.dev/packages/http) | GitHub Releases API for update checking |
+| [`intl`](https://pub.dev/packages/intl) | Internationalization utilities |
 
-The executable will be created in the `dist` directory.
+## 🤝 Contributing
 
-## Project Structure
+Contributions are welcome! Here's how to get started:
 
-```
-battery-health-checker/
-├── launcher.py           # Application entry point
-├── requirements.txt      # Python dependencies
-├── src/
-│   ├── core/            # Core business logic
-│   ├── gui/             # User interface components
-│   │   ├── widgets/     # Custom UI widgets
-│   │   └── windows/     # Application windows
-│   └── utils/           # Utility functions
-└── resources/           # Application resources
-```
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feature/my-feature`
+3. **Commit** your changes: `git commit -m "Add my feature"`
+4. **Push** to your fork: `git push origin feature/my-feature`
+5. **Open** a Pull Request
 
-## Contributing
+### Guidelines
 
-Contributions are welcome! Here's how you can help:
+- Follow the existing code style and architecture patterns
+- All colors must be defined in [`app_colors.dart`](lib/core/constants/app_colors.dart)
+- Add documentation comments to all public APIs
+- Run `flutter analyze` before submitting
 
-1. Fork the repository
-2. Create a new branch (`git checkout -b feature/improvement`)
-3. Make your changes
-4. Commit your changes (`git commit -am 'Add new feature'`)
-5. Push to the branch (`git push origin feature/improvement`)
-6. Create a Pull Request
+## 💖 Support the Project
 
-## Support the Project
+If this app helps you, consider supporting its development:
 
-If you find this tool useful, consider supporting its development:
+| Platform | Link |
+|----------|------|
+| 💳 **PayPal** | [paypal.me/LotfiBoukhemerra](https://www.paypal.com/paypalme/LotfiBoukhemerra) |
+| ☕ **Ko-fi** | [ko-fi.com/lotfibkmr](https://ko-fi.com/lotfibkmr) |
 
-<div align="center">
+Every contribution — no matter how small — helps keep this project alive and growing. Thank you! 🙏
 
-[![PayPal](https://img.shields.io/badge/PayPal-Donate-blue.svg?logo=paypal&style=for-the-badge)](https://www.paypal.com/paypalme/LotfiBoukhemerra) [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donate-yellow.svg?logo=buy-me-a-coffee&style=for-the-badge)](https://buymeacoffee.com/eldev)
+## 📄 License
 
-</div>
+This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/) license.
 
-Your support helps maintain and improve the Battery Health Checker!
+You are free to share and adapt this project for non-commercial purposes, as long as you give appropriate credit and distribute your contributions under the same license. See the [LICENSE](LICENSE) file for details.
 
-## License
+## Author
 
-This project is licensed under the GPLv3 License - see the [LICENSE](LICENSE) file for details.
+**Lotfi Boukhemerra**
 
-## Acknowledgments
-
--   Built with PyQt6 for modern UI
--   Uses Windows native battery reporting tools
--   Icons and resources from [Fluent UI System Icons](https://github.com/microsoft/fluentui-system-icons)
+- Website: [batterychecker.org](https://batterychecker.org)
+- GitHub: [@LotfiBoukhemerra](https://github.com/LotfiBoukhemerra)
 
 ---
 
-<div align="center">
-
-Made with ❤️ by <e/dev>
-
-</div>
+<p align="center">
+  Made with ❤️ using Flutter
+</p>

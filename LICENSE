@@ -1,30 +1,42 @@
-Battery Health Checker License (GPLv3 + Non-Commercial Clause)
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
 
-Copyright © 2024 Lotfi Boukhemerra
+Copyright (c) 2025 Lotfi Boukhemerra
 
-This program is distributed under the GPLv3 license with the following modifications:
+This work is licensed under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International License.
 
-1. Basic Rights (Based on GPLv3)
+You are free to:
 
-You are free to use, modify, and redistribute this software.
+  - Share — copy and redistribute the material in any medium or format
+  - Adapt — remix, transform, and build upon the material
 
-Any derived version must remain open-source and must publish its source code.
+Under the following terms:
 
-2. Prohibition of Commercial Use
+  - Attribution — You must give appropriate credit, provide a link to
+    the license, and indicate if changes were made. You may do so in
+    any reasonable manner, but not in any way that suggests the licensor
+    endorses you or your use.
 
-Selling this software or making direct profit from it is strictly prohibited.
+  - NonCommercial — You may not use the material for commercial purposes.
 
-Redistribution as part of commercial closed-source products or paid services is not allowed.
+  - ShareAlike — If you remix, transform, or build upon the material,
+    you must distribute your contributions under the same license as
+    the original.
 
-3. Mandatory Source Code Sharing
+  - No additional restrictions — You may not apply legal terms or
+    technological measures that legally restrict others from doing
+    anything the license permits.
 
-Any modifications or improvements must be made available to the public under the same license.
+Notices:
 
-When distributing a modified version, the source code must be published, and this license must be included.
+  You do not have to comply with the license for elements of the
+  material in the public domain or where your use is permitted by an
+  applicable exception or limitation.
 
-4. Disclaimer
+  No warranties are given. The license may not give you all of the
+  permissions necessary for your intended use. For example, other
+  rights such as publicity, privacy, or moral rights may limit how
+  you use the material.
 
-This software is provided "as is" without any warranty. The author is not responsible for any damages resulting from its use.
-
-For the original GPLv3 license, visit:
-https://www.gnu.org/licenses/gpl-3.0.html
+For the full legal text, see:
+https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode

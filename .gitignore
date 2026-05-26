@@ -1,100 +1,55 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Virtual Environment
-venv/
-env/
-ENV/
-.env
-.venv
-env.bak/
-venv.bak/
-
-# PyInstaller
-*.manifest
-*.spec
-build/
-dist/
-
-# IDE specific files
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-.project
-.pydevproject
-.settings/
-.vs/
-
-# PyQt
-*.ui.autosave
-*_ui.py
-*_rc.py
-
-# Windows specific
-*.exe
-*.dll
-*.pyd
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# Project specific
-battery_report.html
+# Miscellaneous
+*.class
 *.log
-.coverage
-htmlcov/
-.pytest_cache/
-.mypy_cache/
-
-# Temporary files
-*.bak
-*.tmp
-*.temp
+*.pyc
 *.swp
-*.swo
-*~
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
 
-# Documentation
-docs/_build/
-docs/_static/
-docs/_templates/
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
 
-# Jupyter Notebook
-.ipynb_checkpoints
-*.ipynb
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
 
-# Environment configuration
-.env
-.env.local
-.env.*.local
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
 
-# Package files
-*.tar.gz
-*.zip
-*.rar
-*.7z
+# Symbolication related
+app.*.symbols
 
-battery_report_test.html
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+#coding
+.agent/
+
+#redist
+/redist/VC_redist.x64.exe
+
+/installer_output/
+
+build.iss
