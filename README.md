@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.41-02569B?logo=flutter" alt="Flutter" /></a>
   <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.11-0175C2?logo=dart" alt="Dart" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg" alt="License" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0--only-3da639" alt="License" /></a>
   <a href="https://github.com/LotfiBoukhemerra/Battery-Health-Checker/releases"><img src="https://img.shields.io/github/v/release/LotfiBoukhemerra/Battery-Health-Checker?label=Download" alt="Release" /></a>
   <!-- <a href="https://github.com/LotfiBoukhemerra/Battery-Health-Checker/stargazers" title="Star"><img src="https://img.shields.io/github/stars/LotfiBoukhemerra/Battery-Health-Checker" alt="GitHub Stars" /></a>
   <a href="https://github.com/LotfiBoukhemerra/Battery-Health-Checker/network/members" title="Fork"><img src="https://img.shields.io/github/forks/LotfiBoukhemerra/Battery-Health-Checker" alt="GitHub Forks" /></a> -->
