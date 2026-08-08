@@ -93,7 +93,7 @@ BEGIN
             VALUE "FileDescription", "Battery Checker" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "battery_checker" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 Lotfi Boukhemerra. Licensed under CC BY-NC-SA 4.0" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Lotfi Boukhemerra. Licensed under GPL-3.0-only" "\0"
             VALUE "OriginalFilename", "battery_checker.exe" "\0"
             VALUE "ProductName", "Battery Checker" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

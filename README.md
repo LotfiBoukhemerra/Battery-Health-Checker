@@ -205,9 +205,20 @@ Every contribution — no matter how small — helps keep this project alive and
 
 ## 📄 License
 
-This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/) license.
+Battery Health Checker - Check your battery health
+Copyright (c) 2025 Lotfi Boukhemerra
 
-You are free to share and adapt this project for non-commercial purposes, as long as you give appropriate credit and distribute your contributions under the same license. See the [LICENSE](LICENSE) file for details.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 3 of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 ## Author
 
